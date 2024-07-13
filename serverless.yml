@@ -1,4 +1,4 @@
-service: lp-wordpress-3blocks #LP3Blocks
+service: lp-wordpress-Demo #LPDemo
 
 useDotenv: true
 

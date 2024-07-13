@@ -1,8 +1,8 @@
 Resources:
-  LP3BlocksUser:
+  LPDemoUser:
     Type: AWS::IAM::User
     Properties:
-      UserName: LP3BlocksUser
+      UserName: LPDemoUser
       Policies:
         - PolicyName: AmazonS3FullAccess
           PolicyDocument:
@@ -13,13 +13,13 @@ Resources:
                   - s3:*
                 Resource: '*'
 
-  LP3BlocksUserAccessKey:
+  LPDemoUserAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
       UserName:
-        !Ref LP3BlocksUser
+        !Ref LPDemoUser
 
-  LP3BlocksBucket:
+  LPDemoBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: ${self:custom.prefixStageService}
@@ -29,18 +29,18 @@ Resources:
         Rules:
           - ObjectOwnership: ObjectWriter
 
-  LP3BlocksBucketPolicy:
+  LPDemoBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref LP3BlocksBucket
+      Bucket: !Ref LPDemoBucket
       PolicyDocument:
         Statement:
           Action: 's3:GetObject'
           Effect: Allow
           Principal: '*'
-          Resource: !Sub "${LP3BlocksBucket.Arn}/*"
+          Resource: !Sub "${LPDemoBucket.Arn}/*"
 
-  LP3BlocksAppRunnerService:
+  LPDemoAppRunnerService:
     Type: AWS::AppRunner::Service
     Properties:
       SourceConfiguration:
@@ -50,7 +50,7 @@ Resources:
           ImageConfiguration:
             RuntimeEnvironmentVariables:
               - Name: WORDPRESS_DB_HOST 
-                Value: !GetAtt LP3BlocksDatabase.Endpoint.Address
+                Value: !GetAtt LPDemoDatabase.Endpoint.Address
               - Name: WORDPRESS_DB_NAME 
                 Value: ${env:DB_NAME}
               - Name: WORDPRESS_DB_USER
@@ -74,7 +74,7 @@ Resources:
         HealthyThreshold: 2
         UnhealthyThreshold: 2
 
-  LP3BlocksDatabase:
+  LPDemoDatabase:
     Type: AWS::RDS::DBInstance
     Properties:
       DBInstanceIdentifier: ${self:custom.prefixStageService}-db
@@ -87,24 +87,24 @@ Resources:
       PubliclyAccessible: true
 
 Outputs:
-  LP3BlocksAppRunnerServiceUrl:
+  LPDemoAppRunnerServiceUrl:
     Description: "URL of the App Runner Service"
-    Value: !GetAtt LP3BlocksAppRunnerService.ServiceUrl
-  LP3BlocksRDSInstanceEndpoint:
+    Value: !GetAtt LPDemoAppRunnerService.ServiceUrl
+  LPDemoRDSInstanceEndpoint:
     Description: "RDS MySQL instance endpoint"
-    Value: !GetAtt LP3BlocksDatabase.Endpoint.Address
-  LP3BlocksRDSInstancePort:
+    Value: !GetAtt LPDemoDatabase.Endpoint.Address
+  LPDemoRDSInstancePort:
     Description: "RDS MySQL instance port"
-    Value: !GetAtt LP3BlocksDatabase.Endpoint.Port
-  LP3BlocksRDSInstancePass:
+    Value: !GetAtt LPDemoDatabase.Endpoint.Port
+  LPDemoRDSInstancePass:
     Description: "RDS MySQL instance pass"
     Value: ${env:DB_PASSWORD}
-  LP3BlocksRDSInstanceUser:
+  LPDemoRDSInstanceUser:
     Description: "RDS MySQL instance user"
     Value: ${env:DB_USERNAME}
-  LP3BlocksUserAccessKey:
-    Description: "LP3BlocksUser AccessKey"
-    Value: !Ref LP3BlocksUserAccessKey
-  LP3BlocksUserSecretKey:
-    Description: "LP3BlocksUser SecretKey"
-    Value: !GetAtt LP3BlocksUserAccessKey.SecretAccessKey
+  LPDemoUserAccessKey:
+    Description: "LPDemoUser AccessKey"
+    Value: !Ref LPDemoUserAccessKey
+  LPDemoUserSecretKey:
+    Description: "LPDemoUser SecretKey"
+    Value: !GetAtt LPDemoUserAccessKey.SecretAccessKey
