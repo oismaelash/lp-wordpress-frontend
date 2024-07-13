@@ -1,4 +1,4 @@
-service: lp-wordpress-Demo #LPDemo
+service: lp-wordpress-demo #LPDemo
 
 useDotenv: true
 
