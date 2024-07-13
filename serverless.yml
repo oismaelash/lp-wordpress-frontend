@@ -1,0 +1,13 @@
+service: lp-wordpress-3blocks #LP3Blocks
+
+useDotenv: true
+
+provider:
+  name: aws
+  region: us-east-1
+
+custom:
+  prefixStageService: ${opt:stage}-${self:service}
+
+resources:
+  ${file(./resources.yml)}

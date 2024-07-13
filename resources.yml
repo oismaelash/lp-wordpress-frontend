@@ -1,0 +1,110 @@
+Resources:
+  LP3BlocksUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: LP3BlocksUser
+      Policies:
+        - PolicyName: AmazonS3FullAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource: '*'
+
+  LP3BlocksUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName:
+        !Ref LP3BlocksUser
+
+  LP3BlocksBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:custom.prefixStageService}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+
+  LP3BlocksBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref LP3BlocksBucket
+      PolicyDocument:
+        Statement:
+          Action: 's3:GetObject'
+          Effect: Allow
+          Principal: '*'
+          Resource: !Sub "${LP3BlocksBucket.Arn}/*"
+
+  LP3BlocksAppRunnerService:
+    Type: AWS::AppRunner::Service
+    Properties:
+      SourceConfiguration:
+        ImageRepository:
+          ImageIdentifier: ${env:WORDPRESS_IMAGE}
+          ImageRepositoryType: ECR_PUBLIC
+          ImageConfiguration:
+            RuntimeEnvironmentVariables:
+              - Name: WORDPRESS_DB_HOST 
+                Value: !GetAtt LP3BlocksDatabase.Endpoint.Address
+              - Name: WORDPRESS_DB_NAME 
+                Value: ${env:DB_NAME}
+              - Name: WORDPRESS_DB_USER
+                Value: ${env:DB_USERNAME}
+              - Name: WORDPRESS_DB_PASSWORD
+                Value: ${env:DB_PASSWORD}
+              - Name: WORDPRESS_TABLE_PREFIX
+                Value: wp_
+              - Name: WORDPRESS_DEBUG
+                Value: false
+            Port: 80
+      InstanceConfiguration:
+        Cpu: 1024
+        Memory: 2048
+      ServiceName: ${self:custom.prefixStageService}
+      HealthCheckConfiguration:
+        Protocol: TCP
+        Path: "/"
+        Interval: 10
+        Timeout: 5
+        HealthyThreshold: 2
+        UnhealthyThreshold: 2
+
+  LP3BlocksDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: ${self:custom.prefixStageService}-db
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      MasterUsername: ${env:DB_USERNAME}
+      MasterUserPassword: ${env:DB_PASSWORD}
+      DBName: ${env:DB_NAME}
+      PubliclyAccessible: true
+
+Outputs:
+  LP3BlocksAppRunnerServiceUrl:
+    Description: "URL of the App Runner Service"
+    Value: !GetAtt LP3BlocksAppRunnerService.ServiceUrl
+  LP3BlocksRDSInstanceEndpoint:
+    Description: "RDS MySQL instance endpoint"
+    Value: !GetAtt LP3BlocksDatabase.Endpoint.Address
+  LP3BlocksRDSInstancePort:
+    Description: "RDS MySQL instance port"
+    Value: !GetAtt LP3BlocksDatabase.Endpoint.Port
+  LP3BlocksRDSInstancePass:
+    Description: "RDS MySQL instance pass"
+    Value: ${env:DB_PASSWORD}
+  LP3BlocksRDSInstanceUser:
+    Description: "RDS MySQL instance user"
+    Value: ${env:DB_USERNAME}
+  LP3BlocksUserAccessKey:
+    Description: "LP3BlocksUser AccessKey"
+    Value: !Ref LP3BlocksUserAccessKey
+  LP3BlocksUserSecretKey:
+    Description: "LP3BlocksUser SecretKey"
+    Value: !GetAtt LP3BlocksUserAccessKey.SecretAccessKey

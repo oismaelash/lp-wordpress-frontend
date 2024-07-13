@@ -1,0 +1,22 @@
+{
+  "name": "site-wordpress-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3blocks-com-br/site-wordpress-frontend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/3blocks-com-br/site-wordpress-frontend/issues"
+  },
+  "homepage": "https://github.com/3blocks-com-br/site-wordpress-frontend#readme",
+  "devDependencies": {
+    "serverless": "^4.0.24"
+  }
+}
